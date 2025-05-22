@@ -7,60 +7,45 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+enum CalculationError: Error {
+    case divideByZero
+}
 
-    enum CalculationError: Error {
-        case divideByZero
-    }
+enum CalculationHistoryItem {
+    case operation(Operation)
+    case number(Double)
+}
+
+enum Operation: String {
+    case devide = "/"
+    case multiplication = "X"
+    case subtraction = "-"
+    case plus = "+"
     
-    enum Operation: String {
-        case devide = "/"
-        case multiplication = "X"
-        case subtraction = "-"
-        case plus = "+"
-        
-        func calculate(number1: Double, number2: Double) throws -> Double {
-            switch self {
-            case .devide:
-                if number2 == 0 {
-                    throw CalculationError.divideByZero
-                }
-                return number1 / number2
-                
-            case .multiplication:
-                return number1 * number2
-            case .subtraction:
-                return number1 - number2
-            case .plus:
-                return number1 + number2
+    func calculate(number1: Double, number2: Double) throws -> Double {
+        switch self {
+        case .devide:
+            if number2 == 0 {
+                throw CalculationError.divideByZero
             }
+            return number1 / number2
+            
+        case .multiplication:
+            return number1 * number2
+        case .subtraction:
+            return number1 - number2
+        case .plus:
+            return number1 + number2
         }
     }
+}
+
+class ViewController: UIViewController {
+
+    var calculations: [(expression: [CalculationHistoryItem], result: Double)] = []
     
-    enum CalculationHistoryItem {
-        case operation(Operation)
-        case number(Double)
-    }
     
     var calculationHistory: [CalculationHistoryItem] = []
-    
-    @IBOutlet var buttonCancel: UIButton!
-    @IBOutlet var buutonDevide: UIButton!
-    @IBOutlet var buttonSeven: UIButton!
-    @IBOutlet var buttonEight: UIButton!
-    @IBOutlet var buttonNine: UIButton!
-    @IBOutlet var butonMulti: UIButton!
-    @IBOutlet var buttonThree: UIButton!
-    @IBOutlet var buttonTwo: UIButton!
-    @IBOutlet var buttonOne: UIButton!
-    @IBOutlet var buttonSubtraction: UIButton!
-    @IBOutlet var buttonSix: UIButton!
-    @IBOutlet var buttonFive: UIButton!
-    @IBOutlet var buttonFour: UIButton!
-    @IBOutlet var buttonEquel: UIButton!
-    @IBOutlet var buttonZero: UIButton!
-    @IBOutlet var buttonPoint: UIButton!
-    @IBOutlet var buttonPlus: UIButton!
     
     @IBOutlet var resultLabel: UILabel!
     
@@ -121,6 +106,7 @@ class ViewController: UIViewController {
             let result = try calculate()
             
             resultLabel.text = numberFormatter.string(from: NSNumber(value: result))
+            calculations.append((calculationHistory, result))
         } catch {
             resultLabel.text = "Ошибка"
         }
@@ -133,6 +119,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         resetResultLabel()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -144,7 +131,7 @@ class ViewController: UIViewController {
         let sb = UIStoryboard(name: "Main", bundle: nil)
         let calculationListVC = sb.instantiateViewController(identifier: "CalculationListViewController")
         if let vc = calculationListVC as? CalculationListViewController {
-            vc.result = resultLabel.text
+            vc.calculations = calculations
         }
         
         navigationController?.pushViewController(calculationListVC, animated: true)
