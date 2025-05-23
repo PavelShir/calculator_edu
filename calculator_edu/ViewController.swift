@@ -42,10 +42,11 @@ enum Operation: String {
 
 class ViewController: UIViewController {
 
-    var calculations: [(expression: [CalculationHistoryItem], result: Double)] = []
-    
+    var calculations: [Calculation] = []
     
     var calculationHistory: [CalculationHistoryItem] = []
+    
+    let calculationHistoryStorage = CalculationHistoryStrorage()
     
     @IBOutlet var resultLabel: UILabel!
     
@@ -106,7 +107,9 @@ class ViewController: UIViewController {
             let result = try calculate()
             
             resultLabel.text = numberFormatter.string(from: NSNumber(value: result))
-            calculations.append((calculationHistory, result))
+            let newCalculation = Calculation(expression: calculationHistory, result: result)
+            calculations.append(newCalculation)
+            calculationHistoryStorage.setHistory(calculation: calculations)
         } catch {
             resultLabel.text = "Ошибка"
         }
@@ -120,6 +123,7 @@ class ViewController: UIViewController {
         
         resetResultLabel()
         
+        calculations = calculationHistoryStorage.loadHistory()
     }
     
     override func viewWillAppear(_ animated: Bool) {
